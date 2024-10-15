@@ -12,6 +12,10 @@ void displayMenu() {
 
 
 int main() {
+
+    std::locale::global(std::locale("")); // Ustawienie lokalizacji dla wszystkich strumieni znakowych
+
+
     int choice;
     std::string player1Name, player2Name;
     Game* game = nullptr; // Wskaźnik na obiekt gry
