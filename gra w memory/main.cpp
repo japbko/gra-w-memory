@@ -1,97 +1,114 @@
 ﻿#include <iostream>
+#include <limits>
+#include <string>
+#include <stdexcept>
+#include <memory>
 #include "Game.h"
 
-void displayMenu() {
+void displayMenu()
+{
     std::cout << "================= Memory Game =================\n";
     std::cout << "1. Nowa gra\n";
     std::cout << "2. Wczytaj grę\n";
-    std::cout << "3. Zapisz grę\n"; // Nowa opcja
-    std::cout << "4. Wyjście\n";
+    std::cout << "3. Wyjście\n";
     std::cout << "Wybierz opcję: ";
 }
 
+int getValidIntInput(const std::string& prompt)
+{
+    int input;
+    std::cout << prompt;
+    if (!(std::cin >> input))
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        throw std::invalid_argument("Błąd: Wprowadź liczbę całkowitą.");
+    }
+    return input;
+}
 
-int main() {
+int main()
+{
 
-    std::locale::global(std::locale("")); // Ustawienie lokalizacji dla wszystkich strumieni znakowych
+    std::locale::global(std::locale(""));
 
     int choice;
     std::string player1Name, player2Name;
-    Game* game = nullptr; // Wskaźnik na obiekt gry
+    Game* game = nullptr;
 
-    while (true) {
+    while (true)
+    {
         displayMenu();
-        std::cin >> choice;
+        try
+        {
+            choice = getValidIntInput("");
 
-        if (choice == 1) {
-            // Nowa gra
-            
-            
-
-                int rows, cols;
+            switch (choice)
+            {
+            case 1:
+            {
+                // Nowa gra
                 std::cout << "Podaj nazwę gracza 1: ";
                 std::cin >> player1Name;
                 std::cout << "Podaj nazwę gracza 2: ";
                 std::cin >> player2Name;
 
-                try
+                int rows, cols;
+
+                std::cout << "Podaj liczbe wierszy: ";
+                if (!(std::cin >> rows) || rows <= 0 || rows > 10)
                 {
-                    std::cout << "Podaj liczbę wierszy: ";
-                    std::cin >> rows;
-                    std::cout << "Podaj liczbę kolumn: ";
-                    std::cin >> cols;
-
-                    if ((rows * cols) % 2 != 0)
-                    {
-                        throw std::invalid_argument("liczba kart na planszy musi być parzysta");
-                    }
-
-                    game = new Game(rows, cols, player1Name, player2Name);
-                    game->startGame();
-                    delete game; // Zwalniamy pamięć po zakończeniu gry
-
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    throw std::invalid_argument("Pamiętaj że liczba wierszy musi być liczbą całkowitą więszką od 0 i mniejszą niż 10\n");
                 }
-                catch (const std::invalid_argument& e)
+
+                std::cout << "Podaj liczbe kolumn: ";
+                if (!(std::cin >> cols) || cols <= 0 || cols > 10)
                 {
-                    std::cerr << "liczba kart na planszy musi być parzysta. spróbuj ponownie";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    throw std::invalid_argument("Pamiętaj że liczba column musi być liczbą całkowitą więszką od 0 i mniejszą niż 10\n");
                 }
-               
-            
-        }
-        else if (choice == 2) {
-            // Wczytaj grę
-            std::string filename;
-            std::cout << "Podaj nazwę pliku do wczytania: ";
-            std::cin >> filename;
 
-            game = new Game(0, 0, "", ""); // Tworzenie pustego obiektu gry
-            game->loadGame(filename);
-            game->startGame();
-            delete game; // Zwalniamy pamięć po zakończeniu gry
-        }
-        else if (choice == 3) {
-            // Zapisz grę
-            if (game != nullptr) { // Sprawdź, czy gra jest aktywna
+                if ((rows * cols) % 2 != 0)
+                {
+                    throw std::invalid_argument("Błąd: Iloczyn wierszy i kolumn musi być liczbą parzystą.");
+                }
+
+                game = new Game(rows, cols, player1Name, player2Name);
+                game->startGame();
+                delete game;
+
+                break;
+            }
+            case 2:
+            {
+                // Wczytaj grę
                 std::string filename;
-                std::cout << "Podaj nazwę pliku do zapisu gry: ";
+                std::cout << "Podaj nazwę pliku do wczytania: ";
                 std::cin >> filename;
-                game->saveGame(filename);
-            }
-            else {
-                std::cout << "Nie ma aktywnej gry do zapisania.\n";
-            }
 
+                game = new Game(0, 0, "", ""); // Tworzenie pustego obiektu gry
+                game->loadGame(filename);
+                game->startGame();
+                delete game; // Zwalniamy pamięć po zakończeniu gry
+                break;
+            }
+            case 3:
+                std::cout << "Dziękujemy za grę! Do zobaczenia!\n";
+                return 0;
+            default:
+                throw std::invalid_argument("Niepoprawna opcja. Spróbuj ponownie.");
+            }
         }
-        else if (choice == 4) {
-            // Wyjście
-            std::cout << "Dziękujemy za grę! Do zobaczenia!\n";
-            break;
-
+        catch (const std::invalid_argument& e)
+        {
+            std::cerr << e.what() << std::endl;
         }
-        else {
-            std::cout << "Niepoprawna opcja. Spróbuj ponownie.\n";
+        catch (...)
+        {
+            std::cerr << "Wystąpił błąd" << std::endl;
         }
     }
-
-    return 0;
 }
